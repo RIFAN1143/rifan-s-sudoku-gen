@@ -1,1 +1,0 @@
-# rifan-s-sudoku-gen

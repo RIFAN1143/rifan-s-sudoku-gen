@@ -55,10 +55,12 @@
             border-radius: 5px;
             cursor: pointer;
             margin-top: 15px;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s ease;
         }
         .button:hover {
             background-color: #45a049;
+            transform: scale(1.05); /* Slightly increase the button size on hover */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add a soft shadow on hover */
         }
         .heading {
             text-align: center;
@@ -86,9 +88,12 @@
             border-radius: 5px;
             padding: 10px 20px;
             cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s ease;
         }
         .form-container button:hover {
             background-color: #e44d29;
+            transform: scale(1.05); /* Slightly increase the button size on hover */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add a soft shadow on hover */
         }
         @media (max-width: 768px) {
             .card {
@@ -218,79 +223,67 @@
         // Sudoku puzzle generation (backtracking algorithm)
         function generateValidSudoku(level) {
             const grid = Array.from({ length: 9 }, () => Array(9).fill(0));
-            fillGrid(grid);
-            removeCells(grid, level);  // Remove cells based on level to create a puzzle
-            return grid;
-        }
     
-        // Function to fill a Sudoku grid using backtracking
-        function fillGrid(grid) {
-            const isValid = (grid, row, col, num) => {
+            function isSafeToPlace(num, row, col) {
+                // Check the row, column, and 3x3 box
                 for (let i = 0; i < 9; i++) {
-                    if (grid[row][i] === num || grid[i][col] === num) return false;
-                    const boxRow = Math.floor(row / 3) * 3 + Math.floor(i / 3);
-                    const boxCol = Math.floor(col / 3) * 3 + (i % 3);
-                    if (grid[boxRow][boxCol] === num) return false;
+                    if (grid[row][i] === num || grid[i][col] === num) {
+                        return false;
+                    }
                 }
-                return true;
-            };
     
-            const solve = () => {
-                for (let row = 0; row < 9; row++) {
-                    for (let col = 0; col < 9; col++) {
-                        if (grid[row][col] === 0) {
-                            const nums = [...Array(9).keys()].map(x => x + 1).sort(() => Math.random() - 0.5);
-                            for (let num of nums) {
-                                if (isValid(grid, row, col, num)) {
-                                    grid[row][col] = num;
-                                    if (solve()) return true;
-                                    grid[row][col] = 0;
-                                }
-                            }
+                const startRow = Math.floor(row / 3) * 3;
+                const startCol = Math.floor(col / 3) * 3;
+    
+                for (let i = startRow; i < startRow + 3; i++) {
+                    for (let j = startCol; j < startCol + 3; j++) {
+                        if (grid[i][j] === num) {
                             return false;
                         }
                     }
                 }
+    
                 return true;
-            };
-            solve();
-        }
-    
-        // Function to remove cells based on difficulty level
-        function removeCells(grid, level) {
-            let count;
-            switch (level) {
-                case 'easy':
-                    count = 35; break;
-                case 'medium':
-                    count = 40; break;
-                case 'hard':
-                    count = 45; break;
-                case 'harder':
-                    count = 50; break;
-                case 'hardest':
-                    count = 55; break;
             }
-            let removed = 0;
-            while (removed < count) {
-                const row = Math.floor(Math.random() * 9);
-                const col = Math.floor(Math.random() * 9);
-                if (grid[row][col] !== 0) {
-                    grid[row][col] = 0;
-                    removed++;
+    
+            function fillGrid() {
+                for (let i = 0; i < 9; i++) {
+                    for (let j = 0; j < 9; j++) {
+                        if (grid[i][j] === 0) {
+                            const nums = Array.from({ length: 9 }, (_, index) => index + 1).sort(() => Math.random() - 0.5);
+    
+                            for (let num of nums) {
+                                if (isSafeToPlace(num, i, j)) {
+                                    grid[i][j] = num;
+                                    if (fillGrid()) {
+                                        return true;
+                                    }
+                                    grid[i][j] = 0;
+                                }
+                            }
+    
+                            return false;
+                        }
+                    }
                 }
+    
+                return true;
             }
+    
+            fillGrid();
+            return grid;
         }
     
-        // Function to generate Sudoku puzzles for the selected count and level
         function generateSudokuPuzzles(level, count) {
             const puzzles = [];
+    
             for (let i = 0; i < count; i++) {
-                puzzles.push(generateValidSudoku(level)); // Replace with real puzzle generation logic
+                const grid = generateValidSudoku(level);
+                puzzles.push(grid);
             }
+    
             return puzzles;
         }
     </script>
-    
 </body>
 </html>
